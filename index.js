@@ -1,43 +1,15 @@
 import express from 'express'
-import mongoose from 'mongoose'
-
-const categories = ['Food', 'Coding', 'Work', 'Other']
-
-// const entries = [
-//     {category: 'Food', content: 'Hello!'},
-//     {category: 'Coding', content: 'Express is cool!'},
-//     {category: 'Work', content: 'Another day at the office.'}
-// ]
-
-// Connect to MongoDB via Mongoose
-mongoose.connect('mongodb+srv://ssteel:Th15isAdminL3af@ca-cluster.kxa8xzn.mongodb.net/journal')
-    .then((m) => m.connection._readyState === 1 ? console.log('Mongoose connected!') : console.log('Mongoose failed to connect'))
-    .catch((err) => console.log(err))
-
-// Create a Mongoose schema to define the structure of a model
-const entrySchema = new mongoose.Schema({
-    category: {type: String, required: true},
-    content: {type: String, required: true}
-})
-
-//Create a Mongoose model based on the schema
-const EntryModel = mongoose.model('Entry', entrySchema)
-
-// Categories schema
-const categorySchema = new mongoose.Schema({
-    name: {type: String, required: true}
-})
-
-// Categories model
-const CategoryModel = mongoose.model('Category', categorySchema)
-
+import { EntryModel, CategoryModel } from './db.js'
 
 const app = express()
 const port = 4001
 
 app.use(express.json())
 
+// HOME ROUTE
 app.get('/', (request, response) => response.send({ info: 'Journal API' }))
+
+// ### CATEGORY ROUTES ###
 
 // Get all categories
 app.get('/categories', async (req, res) => res.send(await CategoryModel.find()))
@@ -108,13 +80,15 @@ app.post('/categories', async (req, res) => {
     }
 })
 
+// ### ENTRY ROUTES ###
+
 // Get all entries
-app.get('/entries', async (req, res) => res.send(await EntryModel.find()))
+app.get('/entries', async (req, res) => res.send(await EntryModel.find().populate({path: 'category', select: 'name'})))
 
 // Get one entry
 app.get('/entries/:id', async (req, res) => {
     try {
-        const entry = await EntryModel.findById(req.params.id)
+        const entry = await EntryModel.findById(req.params.id).populate({ path: 'category', select: 'name '})
         if (entry) {
             res.send(entry)
         } else {
