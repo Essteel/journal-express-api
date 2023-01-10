@@ -1,4 +1,7 @@
 import mongoose from 'mongoose'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 mongoose.set('strictQuery', true)
 
@@ -8,7 +11,7 @@ async function dbClose() {
 }
 // Connect to MongoDB via Mongoose
 try {
-    const m = await mongoose.connect('mongodb+srv://ssteel:Th15isAdminL3af@ca-cluster.kxa8xzn.mongodb.net/journal')
+    const m = await mongoose.connect(process.env.ATLAS_DB_URL)
     console.log(m.connection._readyState === 1 ? console.log('Mongoose connected!') : console.log('Mongoose failed to connect'))
 }
 catch (err) {
