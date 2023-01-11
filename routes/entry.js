@@ -1,5 +1,5 @@
 import express from 'express'
-import { EntryModel } from '../db.js'
+import { EntryModel, CategoryModel } from '../db.js'
 
 const router = express.Router()
 
@@ -59,13 +59,14 @@ router.post('/', async (req, res) => {
     try {
         // 1. Create a new entry object with values passed in from the request
         const { category, content } = req.body
+        const categoryObject = await CategoryModel.findOne({ name: category })
         // Validation and sanitization comes from Model
-        const newEntry = {category, content}
+        const newEntry = { category: categoryObject._id, content }
         // 2. Push new entry to the entries array
         // entries.push(newEntry)
         const insertedEntry = await EntryModel.create(newEntry)
         // 3. Send the new entry with 201 status code
-        res.status(201).send(insertedEntry)
+        res.status(201).send(await insertedEntry.populate({path: 'category', select: 'name'}))
     }
     catch (err) {
         res.status(500).send({error: err.message})
